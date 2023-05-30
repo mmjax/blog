@@ -26,7 +26,14 @@ function MainStackNavigator() {
           <Stack.Screen
           name='Home'
           component={Home}
-          options={{title: 'Главная'}}
+          options={{title: 'Главная',
+            headerStyle: {
+            backgroundColor: '#4959E8'},
+              headerTintColor: '#fff',
+              headerTitleStyle: {
+              fontWeight: 'bold',
+                fontSize: 20,
+          },}}
 
         />
       </Stack.Navigator>

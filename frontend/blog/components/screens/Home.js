@@ -11,7 +11,7 @@ import {
   Pressable,
   Alert,
   SafeAreaView,
-  ActivityIndicator, FlatList, Image,
+  ActivityIndicator, FlatList, Image, TouchableOpacity,
 } from 'react-native';
 
 function Home(props) {
@@ -64,26 +64,32 @@ function Home(props) {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.search}>
+      <SafeAreaView >
         <TextInput placeholder='seach' clearButtonMode='always'
-                   style={{paddingHorizontal:20,
-                     paddingVertical:10, borderColor:"#ccc", borderWidth:1, borderRadius:7}}
+                   style={styles.search}
                    autoCapitalize="none"
                    autoCorrect={false}
                    value={searchQuery} onChangeText={(query) => handleSearch(query)}/>
       </SafeAreaView>
 
-      <FlatList
+      <FlatList style={styles.list}
             data={data}
             renderItem={(item) => item.login.username}
             renderItem={({item}) => (
-                <View>
-                    <Image style={{width:50, height:50, borderRadius:25}} source={{uri: item.picture.thumbnail}}/>
-                    <View>
-                        <Text style={{fontSize: 18}}> {item.name.first} {item.name.last}</Text>
-                        <Text> {item.email}</Text>
+                <TouchableOpacity style={styles.items} onPress={() => navigation.navigate('Sign_up')}>
+                  <View style={styles.header}>
+                    <Image style={styles.item_img} source={{uri: item.picture.thumbnail}}/>
+                    <View style={styles.header_colum}>
+                      <Text style={styles.item_user}> {item.name.first}</Text>
+                      <Text style={styles.item_data}> {item.name.last}</Text>
                     </View>
-                </View>)}
+                  </View>
+
+                    <Image style={styles.post_img} source={{uri: item.picture.thumbnail}}/>
+
+                    <Text style={styles.item_text}> {item.email}</Text>
+
+                </TouchableOpacity>)}
       />
     </View>
 
@@ -98,6 +104,74 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
 
   },
+
+  search:{
+    width:358,
+    height:32,
+    borderWidth:2,
+    borderColor: '#ccc',
+    borderRadius:7,
+    marginTop:16,
+    alignItems:"center",
+  },
+  list:{
+    width:390,
+    marginTop:157,
+  },
+
+  items:{
+    marginTop:16,
+  },
+
+  header:{
+    display: "flex",
+    flexDirection: "row",
+    marginBottom:16,
+  },
+
+  header_colum:{
+    display: "flex",
+    flexDirection: "column",
+    marginLeft:16,
+  },
+
+  item_img:{
+    width:45,
+    height:45,
+    alignItems: "flex-start",
+    borderRadius: 25,
+    marginLeft:16,
+  },
+
+  item_user:{
+    fontStyle: "normal",
+    fontWeight: 400,
+    fontSize: 18,
+  },
+
+  item_data:{
+    color: "#A3A6AA",
+    fontStyle: "normal",
+    fontWeight: 400,
+    fontSize: 16,
+    lineHeight:19,
+  },
+
+  post_img:{
+    paddingTop:-300,
+    width:390,
+    height:250,
+  },
+
+  item_text:{
+    width: 358,
+    marginLeft: 16,
+    marginTop:16,
+    fontStyle: "normal",
+    fontWeight: 400,
+    fontSize: 16,
+
+  }
 
 
 
