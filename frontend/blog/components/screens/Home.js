@@ -72,11 +72,26 @@ function Home(props) {
                    value={searchQuery} onChangeText={(query) => handleSearch(query)}/>
       </SafeAreaView>
 
+      <View style={styles.line_btn}>
+        <Pressable style={styles.o_btn} >
+          <Text style={styles.txt_o_btn}>музыка</Text>
+        </Pressable>
+        <Pressable style={styles.o_btn}>
+          <Text style={styles.txt_o_btn}>фильмы</Text>
+        </Pressable>
+        <Pressable style={styles.o_btn}>
+          <Text style={styles.txt_o_btn}>юмор</Text>
+        </Pressable>
+        <Pressable style={styles.o_btn}>
+          <Text style={styles.txt_o_btn}>игры</Text>
+        </Pressable>
+      </View>
+
       <FlatList style={styles.list}
             data={data}
-            renderItem={(item) => item.login.username}
+            кey={(item) => item.login.username}
             renderItem={({item}) => (
-                <TouchableOpacity style={styles.items} onPress={() => navigation.navigate('Sign_up')}>
+                <TouchableOpacity style={styles.items} onPress={() => navigation.navigate('Post', item)}>
                   <View style={styles.header}>
                     <Image style={styles.item_img} source={{uri: item.picture.thumbnail}}/>
                     <View style={styles.header_colum}>
@@ -105,6 +120,34 @@ const styles = StyleSheet.create({
 
   },
 
+  line_btn:{
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width:329,
+    marginLeft: 0,
+    marginTop: 16,
+  },
+
+  o_btn:{
+    width: 70,
+    height: 70,
+    borderRadius: 50,
+    borderColor: '#D9D9D9',
+    backgroundColor: '#D9D9D9',
+  },
+
+  txt_o_btn:{
+    fontStyle: "normal",
+    fontWeight: 500,
+    fontSize: 14,
+    lineHeight: 17,
+    letterSpacing: 0.03,
+    alignSelf:'center',
+    marginTop: 25
+
+  },
+
   search:{
     width:358,
     height:32,
@@ -116,7 +159,7 @@ const styles = StyleSheet.create({
   },
   list:{
     width:390,
-    marginTop:157,
+    marginTop:16,
   },
 
   items:{
