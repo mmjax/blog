@@ -4,7 +4,7 @@ from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 
 
-from posts.models import Comment, Post, Group
+from posts.models import Comment, Post, Group, Like
 from users.models import CustomUser, Follow
 
 
@@ -40,10 +40,20 @@ class CustomUserSerializer(UserSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
+    is_liked = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
-        fields = '__all__'
+        fields = ['author', 'text', 'pub_date', 'author', 'image', 'group', 'like_count', 'is_liked']
         model = Post
+
+    def get_is_liked(self, obj):
+        try:
+            return Like.objects.filter(
+                user=self.context['request'].user,
+                liked_post=obj.id
+            ).exists()
+        except TypeError:
+            return False
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -85,6 +95,12 @@ class FollowSerializer(serializers.ModelSerializer):
             )
         ]
         model = Follow
+
+
+class LikePostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = '__all__'
 
 
 class GroupSerializer(serializers.ModelSerializer):
