@@ -21,7 +21,6 @@ class CustomUserCreateSerializer(UserCreatePasswordRetypeSerializer):
         )
         required_fields = (
             'username',
-            'email',
             'password'
         )
 
@@ -39,11 +38,16 @@ class CustomUserSerializer(UserSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
-    author = SlugRelatedField(slug_field='username', read_only=True)
+    author = CustomUserSerializer(read_only=True)
     is_liked = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
-        fields = ['author', 'text', 'pub_date', 'author', 'image', 'group', 'like_count', 'is_liked']
+        fields = [
+            'id',
+            'author', 'text', 'pub_date',
+            'author', 'image', 'group',
+            'like_count', 'is_liked'
+        ]
         model = Post
 
     def get_is_liked(self, obj):

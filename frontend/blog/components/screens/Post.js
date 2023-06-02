@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 
 import filter from 'lodash.filter'
+const API_URL = process.env.REACT_APP_API_URL || 'http://192.168.1.38:8000'
 
 import {
   StyleSheet,
@@ -13,9 +14,33 @@ import {
   SafeAreaView,
   ActivityIndicator, FlatList, Image, TouchableOpacity,
 } from 'react-native';
+import defaultLogo from "../logos/def_user_logo.png";
+import postDeafaultLogo from  "../logos/logo.png"
 
-function Post({ route }) {
+function Post({route}) {
+  const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
+
+  useEffect(() => {
+      setIsLoading(true);
+      let post_id = route.params
+      getPost(post_id);
+    }, []);
+
+
+  const getPost = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/api/posts/${id}`);
+      const json = await response.json();
+      console.log(json)
+      await setData(json);
+    }
+    catch (error) {
+      setError(error);
+    }
+  };
   
 
   return (
@@ -25,15 +50,14 @@ function Post({ route }) {
       <View style={styles.post}>
 
         <View style={styles.header}>
-            <Image style={styles.post_user_img} source={{uri: route.params.picture.thumbnail}}/>
+            <Image style={styles.post_user_img} source={data.author.photo != null ? {uri: data.author.photo} : defaultLogo}/>
             <View style={styles.header_col}>
-            <Text style={styles.item_user}>{route.params.name.first}</Text>
-            <Text style={styles.item_data}>{route.params.name.last}</Text>
+            <Text style={styles.item_user}>{data.author.username}</Text>
+            <Text style={styles.item_data}>{data.author.email}</Text>
         </View>
         </View>
-      <Image style={styles.post_img} source={{uri: route.params.picture.thumbnail}}/>
 
-        <Text style={styles.text}>{route.params.email}</Text>
+        <Text style={styles.text}>{}</Text>
       </View>
 
       <View style={styles.line}></View>
@@ -42,13 +66,15 @@ function Post({ route }) {
       <View style={styles.comment}>
 
         <View style={styles.header}>
-            <Image style={styles.post_user_img} source={{uri: route.params.picture.thumbnail}}/>
+            <Image style={styles.post_img} source={data.image != null ? {uri: data.image} : postDeafaultLogo}/>
             <View style={styles.header_col}>
-                <Text style={styles.item_user}>{route.params.name.first}</Text>
-                <Text style={styles.item_data}>{route.params.name.last}</Text>
+                <Text style={styles.item_user}>{data.text}</Text>
+                <Text style={styles.item_data}>{data.group}</Text>
+              <Text style={styles.item_data}>{data.like_count}</Text>
+              <Text style={styles.item_data}>{data.is_liked}</Text>
             </View>
         </View>
-        <Text style={styles.text_com}>{route.params.email}</Text>
+        <Text style={styles.text_com}>{}</Text>
         </View>
       
     </View>

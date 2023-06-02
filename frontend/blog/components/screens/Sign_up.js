@@ -1,5 +1,6 @@
 import React from 'react';
 import { useHistory } from "react-dom";
+const API_URL = process.env.REACT_APP_API_URL || 'http://192.168.1.38:8000'
 
 import { StyleSheet, Text, View, TextInput,Button,Pressable, Alert, } from 'react-native';
 
@@ -9,49 +10,71 @@ function Sign_up(props) {
 
     const { navigation } = props
     const [userData, setUserData] = React.useState({});
-    const [errorPassword, setErrorPassword] = React.useState("");
-    const [errorLogin, setErrorLogin] = React.useState("");
+
+    const checkResponse = (res) => {
+      if (res.ok) {
+        return (res);
+      }
+      return res.json().then((err) => Promise.reject(err));
+    };
+
+    const registerUser = (username, password, re_password) => {
+      return fetch(`${API_URL}/api/users/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, re_password }),
+      }).then(checkResponse);
+    };
 
 
 
-    const onChangeInput = (e) => {
+    const onChangeInput = (event, name) => {
+
         setUserData({
           ...userData,
-          [e.target.name]: e.target.value,
+          [name]: event.nativeEvent.text,
         });
       };
 
 
       const checkValid = () => {
-        if (!userData.email) {
-          Alert.alert("Поле с почтой является обязательным");
+        if (!userData.username) {
+          Alert.alert("Поле с логином является обязательным");
           return false;
         }
         if (!userData.password) {
           Alert.alert("Поле с паролем является обязательным");
           return false;
         }
+        if (!userData.re_password) {
+          Alert.alert("Поле с повторным вводом пароля является обязательным");
+          return false;
+        }
         return true;
       };
 
     const handleSubmit = () => {
-      errorLogin && setErrorLogin("");
-    errorPassword && setErrorPassword("");
-
-        checkValid() &&
-      registerUser(userData.email, userData.password)
+      checkValid() &&
+      registerUser(userData.username, userData.password, userData.re_password)
         .then((res) => {
-          if (res && res.email) {
-            history.push("Sign_in", {from: "Sign_up"});
+          if (res.status === 201) {
+            navigation.navigate('Sign_in')
           }
         })
         .catch((err) => {
-          if (typeof err.email === "object") {
-            setErrorLogin("Пользователь с такой почтой уже зарегистрирован");
-          } else if (typeof err.password === "object") {
-            setErrorPassword(
-              "Пароль должен содержать минимум 8 символов и не состоять полностью из цифр"
-            );
+          console.log(err)
+          if (err.non_field_errors){
+            Alert.alert("Пароли не совпадают");
+          }
+          else if (err.password){
+            Alert.alert("Пароль слишком простой");
+          }
+          else if (err.username){
+            if (err.username[0] === "Enter a valid username. This value may contain only letters, numbers, and @/./+/-/_ characters.")
+              Alert.alert("Введите коректный логин. Он может содержать только буквы, цифры, и @/./+/-/_");
+            else {
+              Alert.alert("Пользователь с таким логином уже существует");
+            }
           }
         });
 
@@ -64,19 +87,23 @@ function Sign_up(props) {
 
         <TextInput
         style={styles.Mail}
-        onChange={onChangeInput}
-        placeholder="Почта"
-        name = "email"
+        onChange={event => onChangeInput(event, 'username')}
+        placeholder="Логин"
         id = {1}
-        error={errorLogin}
         />
         <TextInput
         style={styles.Mail}
-        onChange={onChangeInput}
+        secureTextEntry={true}
+        onChange={event => onChangeInput(event, 'password')}
         placeholder="Пароль"
-        name = "password"
         id = {2}
-        error={errorPassword}
+        />
+        <TextInput
+        style={styles.Mail}
+        secureTextEntry={true}
+        onChange={event => onChangeInput(event, 're_password')}
+        placeholder="Повтор пароля"
+        id = {3}
         />
 
 

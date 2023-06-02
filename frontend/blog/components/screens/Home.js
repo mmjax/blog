@@ -1,6 +1,9 @@
 import React, {useEffect, useState} from 'react';
 
 import filter from 'lodash.filter'
+const API_URL = process.env.REACT_APP_API_URL || 'http://192.168.1.38:8000/api/posts/'
+import defaultLogo from '../logos/def_user_logo.png'
+
 
 import {
   StyleSheet,
@@ -16,7 +19,6 @@ import {
 
 function Home(props) {
 
-  const API_ENDPOINT = `https://randomuser.me/api/?results=30`
 
     const { navigation } = props
 
@@ -29,14 +31,14 @@ function Home(props) {
       setsearchQuery(query);
       const forformattedQuery = query.toLowerCase();
       const filteredData = filter(fullData, (user) => {
-        return contains(user, forformattedQuery);
+        return contains(user, query);
       });
       setData(filteredData);
     };
 
-    const contains = ({name, email}, query) => {
-      const {first, last} = name;
-      if (first.includes(query) || last.includes(query) || email.includes(query)){
+    const contains = ({author, text}, query) => {
+      const {username, email} = author;
+      if (username.includes(query) || email.includes(query) || text.includes(query)){
         return true;
       }
       return false;
@@ -44,28 +46,26 @@ function Home(props) {
 
     useEffect(() => {
       setIsLoading(true);
-      fetchData(API_ENDPOINT);
+      fetchData(API_URL);
     }, []);
 
     const fetchData = async(url) => {
       try {
         const response = await fetch(url);
         const json = await response.json();
-        setData(json.results);
+        setData(json);
 
-        setFullData(json.results);
-
-        console.log(json.results);
-      } catch (error) {
+        setFullData(json);
+      }
+      catch (error) {
         setError(error);
-        console.log(error);
         }
     };
 
   return (
     <View style={styles.container}>
       <SafeAreaView >
-        <TextInput placeholder='seach' clearButtonMode='always'
+        <TextInput placeholder='search' clearButtonMode='always'
                    style={styles.search}
                    autoCapitalize="none"
                    autoCorrect={false}
@@ -89,21 +89,16 @@ function Home(props) {
 
       <FlatList style={styles.list}
             data={data}
-            кey={(item) => item.login.username}
+            кey={(item) => item}
             renderItem={({item}) => (
-                <TouchableOpacity style={styles.items} onPress={() => navigation.navigate('Post', item)}>
+                <TouchableOpacity style={styles.items} onPress={() => navigation.navigate('Post', item.id)}>
                   <View style={styles.header}>
-                    <Image style={styles.item_img} source={{uri: item.picture.thumbnail}}/>
+                    <Image style={styles.item_img} source={item.author.photo != null ? {uri: item.author.photo} : defaultLogo}/>
                     <View style={styles.header_colum}>
-                      <Text style={styles.item_user}> {item.name.first}</Text>
-                      <Text style={styles.item_data}> {item.name.last}</Text>
+                      <Text style={styles.item_user}> {item.author.username}</Text>
+                      <Text style={styles.item_data}> {item.text.length > 30 ? item.text.substring(0, 30) : item.text}</Text>
                     </View>
                   </View>
-
-                    <Image style={styles.post_img} source={{uri: item.picture.thumbnail}}/>
-
-                    <Text style={styles.item_text}> {item.email}</Text>
-
                 </TouchableOpacity>)}
       />
     </View>

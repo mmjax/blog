@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { useHistory } from "react-dom";
+const API_URL = process.env.REACT_APP_API_URL || 'http://192.168.1.38:8000'
 
 import { StyleSheet, Text, View, TextInput,Button,Pressable, Alert, } from 'react-native';
 
@@ -10,50 +11,64 @@ function Sign_in(props) {
 
     const { navigation } = props
     const [userData, setUserData] = React.useState({});
-    const [errorPassword, setErrorPassword] = React.useState("");
-    const [errorLogin, setErrorLogin] = React.useState("");
+    let auth_token = ''
 
-    const onChangeInput = (e) => {
+    const checkResponse = (res) => {
+      if (res.ok) {
+          console.log(res)
+        return (res.json());
+      }
+      return res.json().then((err) => Promise.reject(err));
+    };
+
+    const loginUser = (username, password) => {
+        console.log(username, password)
+      return fetch(`${API_URL}/api/auth/token/login/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      }).then(checkResponse)
+        .then((data) => {
+          if (data) {
+            global.auth_token = data.auth_token;
+            return data;
+          }
+          return null;
+        });
+    };
+    
+    const onChangeInput = (event, name) => {
         setUserData({
           ...userData,
-          [e.target.name]: e.target.value,
+          [name]: event.nativeEvent.text,
         });
       };
 
 
       const checkValid = () => {
-        if (!userData.email) {
-          setErrorLogin("Поле с почтой является обязательным");
+        if (!userData.username) {
+          Alert.alert("Поле с почтой является обязательным");
           return false;
         }
         if (!userData.password) {
-          setErrorPassword("Поле с паролем является обязательным");
+          Alert.alert("Поле с паролем является обязательным");
           return false;
         }
         return true;
       };
 
     const handleSubmit = () => {
-        errorLogin && setErrorLogin("");
-        errorPassword && setErrorPassword("");
-
         checkValid() &&
-        registerUser(userData.email, userData.password)
+        loginUser(userData.username, userData.password)
         .then((res) => {
-          if (res && res.email) {
-            history.push("/signin", {from: "/signup"});
+          if (res) {
+            navigation.navigate('Home')
           }
         })
         .catch((err) => {
-          if (typeof err.email === "object") {
-            setErrorLogin("Пользователь с такой почтой уже зарегистрирован");
-          } else if (typeof err.password === "object") {
-            setErrorPassword(
-              "Пароль должен содержать минимум 8 символов и не состоять полностью из цифр"
-            );
+            Alert.alert("Неверное имя пользователя или пароль");
           }
-        });
-
+        );
       };
 
   return (
@@ -62,24 +77,21 @@ function Sign_in(props) {
 
         <TextInput
         style={styles.Login}
-        onChange={onChangeInput}
+        onChange={event => onChangeInput(event, "username")}
         placeholder="Логин"
-        name = "login"
-        type="text"
         id = {1}
         />
 
         <TextInput
         style={styles.Mail}
-        onChange={onChangeInput}
+        secureTextEntry={true}
+        onChange={event => onChangeInput(event, "password")}
         placeholder="Пароль"
-        name = "password"
         id = {3}
-        error={errorPassword}
         />
 
 
-        <Pressable style={styles.btn} onPress={() => handleSubmit}>
+        <Pressable style={styles.btn} onPress={handleSubmit}>
           <Text style={styles.btn_text}>Войти</Text>
         </Pressable>
 
@@ -95,7 +107,7 @@ function Sign_in(props) {
               <Button
               title="Зарегистрироваться"
               color="#4959E8"
-              onPress={() => navigation.navigate('Home')}
+              onPress={() => navigation.navigate('Sign_up')}
             />
             </View>
 
