@@ -3,6 +3,8 @@ import {REACT_APP_API_URL} from "@env";
 
 
 import { StyleSheet, Text, Image, View, TextInput,Button,Pressable, Alert, } from 'react-native';
+import defaultLogo from '../logos/def_user_logo.png'
+import {useIsFocused} from "@react-navigation/native";
 
 
 
@@ -31,26 +33,30 @@ function Account(props) {
         }).then(checkResponse)
         .then((res) => setUserState(res))
       };
-
+    const isFocused = useIsFocused();
     React.useEffect(() => {
         const token = auth_token;
         if (token) {
         getUser();
         }
-    }, []);
+    }, [isFocused]);
 
   return (
     <View style={styles.container}>
-        <Image style={styles.photo} source={{uri: userState.photo}}/>
+        <Image style={styles.photo} source={userState.photo ? {uri: userState.photo} : defaultLogo}/>
 
         <Text style={styles.login}>{userState.username}</Text>
-
+        <Text style={styles.email}>{userState.email}</Text>
         <Pressable style={styles.btn} onPress={() => navigation.navigate('Sign_in')}>
           <Text style={styles.btn_text}>Выйти из аккаунта</Text>
         </Pressable>
         <Pressable style={styles.btn} onPress={() => navigation.navigate('CreatePost')}>
           <Text style={styles.btn_text}>Создать пост</Text>
         </Pressable>
+        <Pressable style={styles.btn} onPress={() => navigation.navigate('ChangeAccount')}>
+          <Text style={styles.btn_text}>Изменить профиль</Text>
+        </Pressable>
+
 
     </View>
 

@@ -9,29 +9,40 @@ import Home from './screens/Home'
 import Post from './screens/Post'
 import Account from './screens/Account'
 import CreatePost from './screens/CreatePost'
+import ChangeAccount from './screens/ChangeAccount'
 
 const Stack = createStackNavigator()
 
-function MainStackNavigator() {
-
+function MainStackNavigator(props) {
+  const {navigation} = props;
   const docsNavigate = () => {
     navigation.navigate('Авторизация');
   };
 
   return (
     <NavigationContainer>
-      <Stack.Navigator
+      <Stack.Navigator screenOptions={({ navigation }) => ({
+          headerRight: () => (
+      <Button
+        onPress={() => navigation.navigate('Home')}
+        title="главная"
+        color="#fff"
+      />
+    ),
+      })}
         headerMode='float'>
         <Stack.Screen
           name='Sign_in'
           component={Sign_in}
-          options={{title: ' '}}
+          options={{title: ' ',
+          headerLeft: () => null,}}
         />
 
         <Stack.Screen
           name='Sign_up'
           component={Sign_up}
-          options={{title: ' '}}
+          options={{title: ' ',
+          headerLeft: () => null,}}
         />
 
 
@@ -39,6 +50,20 @@ function MainStackNavigator() {
           name='Home'
           component={Home}
           options={{title: 'Главная',
+              headerLeft: () => null,
+              headerRight: () => null,
+            headerStyle: {
+            backgroundColor: '#4959E8'},
+              headerTintColor: '#fff',
+              headerTitleStyle: {
+              fontWeight: 'bold',
+                fontSize: 20,
+          },}}
+        />
+          <Stack.Screen
+          name='ChangeAccount'
+          component={ChangeAccount}
+          options={{title: 'Изменить профиль',
             headerStyle: {
             backgroundColor: '#4959E8'},
               headerTintColor: '#fff',
@@ -51,6 +76,7 @@ function MainStackNavigator() {
           name='Account'
           component={Account}
           options={{title: 'Профиль',
+              headerLeft: () => null,
             headerStyle: {
             backgroundColor: '#4959E8'},
               headerTintColor: '#fff',
@@ -77,6 +103,7 @@ function MainStackNavigator() {
           name='Post'
           component={Post}
           options={{title: 'Пост',
+            headerLeft: ()=> null,
             headerStyle: {
             backgroundColor: '#4959E8'},
               headerTintColor: '#fff',

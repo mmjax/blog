@@ -1,11 +1,10 @@
 import React, {useEffect, useState} from 'react';
 
-import filter from 'lodash.filter'
 import {REACT_APP_API_URL} from "@env";
 const API_URL = REACT_APP_API_URL;
 import defaultLogo from '../logos/def_user_logo.png'
 
-
+import filter from "lodash.filter";
 import {
   StyleSheet,
   Text,
@@ -19,6 +18,7 @@ import {
 } from 'react-native';
 import {AntDesign} from "@expo/vector-icons";
 import {IconButton} from "@react-native-material/core";
+import {useIsFocused} from "@react-navigation/native";
 
 function Home(props) {
 
@@ -71,19 +71,6 @@ function Home(props) {
       })
   };
 
-  const handleLike = () => {
-    const method = Number(data.is_liked) ? DeleteLike : PostLike
-    method(data.id).then(_ => {
-        forceCardUpdate();
-      })
-      .catch(err => {
-        const { errors } = err;
-        if (errors) {
-          Alert.alert(errors);
-        }
-      })
-
-  };
 
     const contains = ({author, text}, query) => {
       const {username, email} = author;
@@ -96,11 +83,11 @@ function Home(props) {
     const HandleGroup = (group) => {
       setGroup(group)
   }
-
+    const isFocused = useIsFocused();
     useEffect(() => {
       setIsLoading(true);
       fetchData(group === 0 ? `${API_URL}/api/posts/` : `${API_URL}/api/posts/?group=${group}`);
-    }, [group]);
+    }, [group, isFocused]);
 
     const fetchData = async(url) => {
       try {
@@ -182,18 +169,11 @@ function Home(props) {
                     <Image style={styles.item_img} source={item.author.photo != null ? {uri: item.author.photo} : defaultLogo}/>
                     <View style={styles.header_colum}>
                       <Text style={styles.item_user}> {item.author.username}</Text>
-                      <Text style={styles.item_data}> {item.pub_date}</Text>
+                      <Text style={styles.item_data}> {item.pub_date.replace('-', '.').split('T')[0].replace('-', '.')}</Text>
                     </View>
                   </View>
-                  <Image style={styles.img} source={{uri: item.image}}/>
+                  {item.image ? <Image style={styles.img} source={{uri: item.image}}/> : null}
                   <Text style={styles.item_text}> {item.text.length > 30 ? item.text.substring(0, 30) : item.text}</Text>
-
-{/*                  <IconButton onPress={handleLike} icon=
-                      {Number(data.is_liked) ?
-                      <AntDesign name="heart" size={24} color="black" />:
-                      <AntDesign name="hearto" size={24} color="black" />
-                    }/>
-                  <Text style={styles.item_data}>{data.like_count}</Text>*/}
                 </TouchableOpacity>)}
       />
 

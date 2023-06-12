@@ -99,9 +99,7 @@ function CreatePost(props) {
                 .catch((err) => {
                     console.log(err)
                 })
-
         }
-
       }
 return (
     <View style={styles.screen}>
@@ -120,10 +118,10 @@ return (
 
         <TextInput
             style={styles.text}
-            // editable
-            // multiline
-            // numberOfLines={1000}
-            // maxLength={10000}
+            editable
+            multiline
+            numberOfLines={1000}
+            maxLength={10000}
             onChange={e => onChangeInput(e, "text")}
             placeholder="?"
             type="text"

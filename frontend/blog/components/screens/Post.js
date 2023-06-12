@@ -17,7 +17,6 @@ import {
   ActivityIndicator, FlatList, Image, TouchableOpacity, TouchableHighlight,
 } from 'react-native';
 import defaultLogo from "../logos/def_user_logo.png";
-import postDeafaultLogo from  "../logos/logo.png"
 import './Sign_in.js';
 
 import { IconButton } from "@react-native-material/core";
@@ -27,10 +26,20 @@ import { AntDesign } from "@expo/vector-icons"
 function Post({route}) {
   const [data, setData] = useState([]);
   const [author, setAuthor] = useState([]);
-  const [group, setGroup] = useState([]);
+  const [postDate, setPostDate] = useState([]);
+  const [comments, setComments] = useState([]);
+  const [userData, setUserData] = useState([]);
   const [user, setUser] = useState('');
   const [ignoredCard, forceCardUpdate] = React.useReducer(x => x + 1, 0);
   const [isLoading, setIsLoading] = useState(true);
+
+  const groups = {
+    "": "Нет группы",
+    "music": "Музыка",
+    "film": "Фильмы",
+    "game": "Игры",
+    "humor": "Юмор"
+  }
 
    const checkResponse = (res) => {
       if (res.ok) {
@@ -48,6 +57,13 @@ function Post({route}) {
         },
       }).then(checkResponse)
     };
+
+  const onChangeInput = (event, name) => {
+        setUserData({
+          ...userData,
+          [name]: event.nativeEvent.text,
+        });
+      };
 
 
   const DeleteLike = (post_id) => {
@@ -94,12 +110,63 @@ function Post({route}) {
 
   };
 
+  const getComments = (id) => {
+      return fetch(`${API_URL}/api/posts/${id}/comments`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          authorisation: `Token ${auth_token}`,
+        },
+      }).then(checkResponse)
+
+  };
+
+  const postComments = (id, text) => {
+    return fetch(`${API_URL}/api/posts/${id}/comments/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Token ${auth_token}`,
+      },
+      body: JSON.stringify( { text } ),
+    }).then((res) => {
+      if(res.status === 201) {
+        return {status: true};
+      }
+      return {status: false};
+    })
+  };
+
+  const checkValid = () => {
+    if (!userData.text) {
+      Alert.alert("Поле с текстом должно быть заполнено");
+      return true;
+    }
+    return false;
+  }
+  const handleSubmit = () => {
+    checkValid &&
+    postComments(data.id, userData.text);
+  };
+
+  useEffect(() => {
+     const interval = setInterval(() => {
+       getComments(route.params)
+           .then((res) => {
+             if (res) {
+               setComments(res);
+             }
+           })
+     }, 200)
+      return () => clearInterval(interval);
+   }, [setComments, comments]);
+
    useEffect(() => {
         getPost(route.params)
             .then((res) => {
               if (res){
                 setAuthor(res.author);
-                setGroup(res.group);
+                setPostDate(res.pub_date.replace('-', '.').split('T')[0].replace('-', '.'));
                 setData(res);
               }
             });
@@ -117,7 +184,7 @@ function Post({route}) {
           <Image style={styles.post_user_img} source={author.photo != null ? {uri:author.photo} : defaultLogo}/>
           <View style={styles.header_col}>
             <Text style={styles.item_user}>{author.username}</Text>
-            <Text style={styles.item_data}>{data.pub_date}</Text>
+            <Text style={styles.item_data}>{postDate}</Text>
           </View>
         </View>
 
@@ -129,7 +196,7 @@ function Post({route}) {
 
 
         <View style={styles.footer}>
-          {data.group != null ? <Text style={styles.item_group}>Группа - {group.title}</Text> : null}
+          <Text style={styles.item_group}>Группа - {groups[data.group]}</Text>
           <View style={styles.footer_like}>
             <Text style={styles.count}>{data.like_count}</Text>
             <IconButton onPress={handleLike} icon=
@@ -144,6 +211,37 @@ function Post({route}) {
         <View style={styles.line}></View>
 
         </View>
+        <TextInput
+        onChange={e => onChangeInput(e, "text")}
+        placeholder="Текст комментария"
+        value={userData.text}
+        id = {1}
+        />
+      <Pressable onPress={handleSubmit}>
+          <Text>Отправить</Text>
+      </Pressable>
+      <FlatList style={styles.list}
+              data={comments}
+              key={(item) => item}
+              renderItem={({item}) => (
+                    <View style={styles.header}>
+                      <Image style={styles.item_img} source={item.author.photo != null ? {uri: item.author.photo} : defaultLogo}/>
+                      <View style={styles.header_colum}>
+                        <Text style={styles.item_user}> {item.author.username}</Text>
+                        <Text style={styles.item_user}> {
+                          item.created.replace('-', '.').split('T')[0].replace('-', '.')
+                        }
+                        </Text>
+                        <Text style={styles.item_user}> {
+                          item.created.split('T')[1].split('.')[0]
+                        }
+                        </Text>
+                        <Text>{item.text}</Text>
+                        <Text>{item.pub_date}</Text>
+                      </View>
+                    </View>
+                    )}
+        />
 
       </ScrollView>
       
@@ -180,6 +278,16 @@ const styles = StyleSheet.create({
     paddingTop:0,
     width:390,
     height:300,
+  },
+
+  item_img:{
+    width:45,
+    height:45,
+    alignItems: "flex-start",
+    borderRadius: 25,
+    marginLeft:16,
+    borderWidth:1,
+    borderColor: "#4959E8",
   },
 
   post_user_img:{

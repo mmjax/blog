@@ -72,9 +72,7 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = SlugRelatedField(
-        read_only=True, slug_field='username'
-    )
+    author = CustomUserSerializer(read_only=True)
 
     class Meta:
         model = Comment
