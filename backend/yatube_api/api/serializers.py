@@ -37,9 +37,19 @@ class CustomUserSerializer(UserSerializer):
         )
 
 
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = '__all__'
+
+
 class PostSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     is_liked = serializers.SerializerMethodField(read_only=True)
+    group = SlugRelatedField(
+        slug_field='slug',
+        queryset=Group.objects.all()
+    )
 
     class Meta:
         fields = [
@@ -48,6 +58,7 @@ class PostSerializer(serializers.ModelSerializer):
             'author', 'image', 'group',
             'like_count', 'is_liked'
         ]
+        read_only_fields = ('like_count',)
         model = Post
 
     def get_is_liked(self, obj):
@@ -102,13 +113,24 @@ class FollowSerializer(serializers.ModelSerializer):
 
 
 class LikePostSerializer(serializers.ModelSerializer):
+    liked_post = PostSerializer(read_only=True)
+
     class Meta:
         model = Like
-        fields = '__all__'
+        fields = ('id', 'liked_post',)
+
+    def validate(self, attrs):
+        if Like.objects.filter(
+            user=CustomUser.objects.get(
+                id=self.context['request'].user.id
+            ),
+            liked_post=Post.objects.get(
+                id=self.context['post_id']
+            )
+        ).exists():
+            raise serializers.ValidationError(
+                'Этот товар уже есть у вас в избранном!')
+        return attrs
 
 
-class GroupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Group
-        fields = '__all__'
 

@@ -3,7 +3,7 @@ from django.urls import path, include
 from rest_framework import routers
 from api.views import (
     PostViewSet, CommentViewSet, FollowViewSet, CustomUserViewSet,
-    GroupViewSet
+    GroupViewSet, LikeCreateDestroyViewSet
 )
 
 
@@ -22,6 +22,12 @@ router_v1.register(
     CustomUserViewSet,
     basename='users'
 )
+router_v1.register(
+    r'posts/(?P<post_id>\d+)/like',
+    LikeCreateDestroyViewSet,
+    basename='like'
+)
+
 
 
 urlpatterns = [

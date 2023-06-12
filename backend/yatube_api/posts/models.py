@@ -35,7 +35,8 @@ class Post(models.Model):
         null=True
     )
     like_count = models.IntegerField(
-        verbose_name="Лайки у постов"
+        verbose_name="Лайки у постов",
+        default=0
     )
 
     def __str__(self):

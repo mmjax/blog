@@ -5,6 +5,8 @@ from rest_framework import filters
 from rest_framework import mixins, status
 from rest_framework import permissions
 from djoser.views import UserViewSet
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
@@ -15,6 +17,7 @@ from .serializers import (
 )
 from .permissions import IsAuthorOrReadOnly
 from posts.models import Post, Group, Like
+from .filters import PostFilter
 
 
 class GetAndPostViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
@@ -34,6 +37,8 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [IsAuthorOrReadOnly]
+    filterset_class = PostFilter
+    filter_backends = (DjangoFilterBackend,)
     pagination_class = LimitOffsetPagination
 
     def perform_create(self, serializer):
@@ -72,7 +77,7 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = GroupSerializer
 
 
-class FavoriteBaseViewSet(viewsets.GenericViewSet):
+class LikeBaseViewSet(viewsets.GenericViewSet):
     permission_classes = (djoser.permissions.CurrentUserOrAdmin,)
     serializer_class = LikePostSerializer
 
@@ -80,10 +85,10 @@ class FavoriteBaseViewSet(viewsets.GenericViewSet):
         return self.request.user.favorite.all().order_by('id')
 
 
-class FavoriteCreateDestroyViewSet(
+class LikeCreateDestroyViewSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
-    FavoriteBaseViewSet
+    LikeBaseViewSet
 ):
 
     def get_serializer_context(self):
@@ -92,6 +97,9 @@ class FavoriteCreateDestroyViewSet(
         return context
 
     def perform_create(self, serializer):
+        post = Post.objects.get(id=self.kwargs.get('post_id'))
+        post.like_count = post.like_count + 1
+        post.save()
         serializer.save(
             user=self.request.user,
             liked_post=get_object_or_404(
@@ -100,6 +108,9 @@ class FavoriteCreateDestroyViewSet(
 
     @action(methods=['delete'], detail=True)
     def delete(self, request, post_id):
+        post = Post.objects.get(id=post_id)
+        post.like_count = post.like_count - 1
+        post.save()
         get_object_or_404(
             Like,
             user=request.user,

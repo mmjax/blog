@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from 'react';
 
 import filter from 'lodash.filter'
-const API_URL = process.env.REACT_APP_API_URL || 'http://192.168.1.38:8000'
+import {REACT_APP_API_URL} from "@env";
+const API_URL = REACT_APP_API_URL
 
 import {
   StyleSheet,
@@ -11,71 +12,140 @@ import {
   Button,
   Pressable,
   Alert,
+    ScrollView,
   SafeAreaView,
-  ActivityIndicator, FlatList, Image, TouchableOpacity,
+  ActivityIndicator, FlatList, Image, TouchableOpacity, TouchableHighlight,
 } from 'react-native';
 import defaultLogo from "../logos/def_user_logo.png";
 import postDeafaultLogo from  "../logos/logo.png"
+import './Sign_in.js';
+
+import { IconButton } from "@react-native-material/core";
+import { AntDesign } from "@expo/vector-icons"
+
 
 function Post({route}) {
   const [data, setData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [author, setAuthor] = useState([]);
+  const [group, setGroup] = useState([]);
+  const [user, setUser] = useState('');
+  const [ignoredCard, forceCardUpdate] = React.useReducer(x => x + 1, 0);
+  const [isLoading, setIsLoading] = useState(true);
+
+   const checkResponse = (res) => {
+      if (res.ok) {
+        return (res.json());
+      }
+      return res.json().then((err) => Promise.reject(err));
+    };
+
+  const getPost = (id) => {
+      return fetch(`${API_URL}/api/posts/${id}/`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Token ${auth_token}`,
+        },
+      }).then(checkResponse)
+    };
 
 
-  useEffect(() => {
-      setIsLoading(true);
-      let post_id = route.params
-      getPost(post_id);
-    }, []);
-
-
-  const getPost = async (id) => {
-    try {
-      const response = await fetch(`${API_URL}/api/posts/${id}`);
-      const json = await response.json();
-      console.log(json)
-      await setData(json);
-    }
-    catch (error) {
-      setError(error);
-    }
+  const DeleteLike = (post_id) => {
+      return fetch(`${API_URL}/api/posts/${post_id}/like/`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Token ${auth_token}`,
+        }
+      }).then((res) => {
+        if (res.status === 204) {
+          return { status: true };
+        }
+        return { status: false};
+      })
   };
-  
+
+  const PostLike = (post_id) => {
+      return fetch(`${API_URL}/api/posts/${post_id}/like/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Token ${auth_token}`,
+        }
+      }).then((res) => {
+        if (res.status === 201) {
+          return { status: true };
+        }
+        return { status: false};
+      })
+  };
+
+  const handleLike = () => {
+    const method = Number(data.is_liked) ? DeleteLike : PostLike
+    method(data.id).then(_ => {
+        forceCardUpdate();
+      })
+      .catch(err => {
+        const { errors } = err;
+        if (errors) {
+          Alert.alert(errors);
+        }
+      })
+
+  };
+
+   useEffect(() => {
+        getPost(route.params)
+            .then((res) => {
+              if (res){
+                setAuthor(res.author);
+                setGroup(res.group);
+                setData(res);
+              }
+            });
+    }, [ignoredCard]);
+
 
   return (
     <View style={styles.container}>
-      
+
+      <ScrollView style={styles.body}>
 
       <View style={styles.post}>
 
         <View style={styles.header}>
-            <Image style={styles.post_user_img} source={data.author.photo != null ? {uri: data.author.photo} : defaultLogo}/>
-            <View style={styles.header_col}>
-            <Text style={styles.item_user}>{data.author.username}</Text>
-            <Text style={styles.item_data}>{data.author.email}</Text>
+          <Image style={styles.post_user_img} source={author.photo != null ? {uri:author.photo} : defaultLogo}/>
+          <View style={styles.header_col}>
+            <Text style={styles.item_user}>{author.username}</Text>
+            <Text style={styles.item_data}>{data.pub_date}</Text>
+          </View>
         </View>
+
+
+        {data.image != null ?
+            <Image style={styles.post_img} source={{uri: data.image}}/> : null}
+
+        <Text style={styles.post_txt}>{data.text}</Text>
+
+
+        <View style={styles.footer}>
+          {data.group != null ? <Text style={styles.item_group}>Группа - {group.title}</Text> : null}
+          <View style={styles.footer_like}>
+            <Text style={styles.count}>{data.like_count}</Text>
+            <IconButton onPress={handleLike} icon=
+              {Number(data.is_liked) ?
+              <AntDesign name="heart" size={24} color="black" />:
+              <AntDesign name="hearto" size={24} color="black" />
+            }/>
+          </View>
+
+
+        </View>
+        <View style={styles.line}></View>
+
         </View>
 
-        <Text style={styles.text}>{}</Text>
-      </View>
-
-      <View style={styles.line}></View>
-
-
-      <View style={styles.comment}>
-
-        <View style={styles.header}>
-            <Image style={styles.post_img} source={data.image != null ? {uri: data.image} : postDeafaultLogo}/>
-            <View style={styles.header_col}>
-                <Text style={styles.item_user}>{data.text}</Text>
-                <Text style={styles.item_data}>{data.group}</Text>
-              <Text style={styles.item_data}>{data.like_count}</Text>
-              <Text style={styles.item_data}>{data.is_liked}</Text>
-            </View>
-        </View>
-        <Text style={styles.text_com}>{}</Text>
-        </View>
+      </ScrollView>
       
     </View>
   );
@@ -90,7 +160,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+    height: 844,
 
+  },
+  body:{
+    width: 390,
   },
 
   post:{
@@ -105,7 +179,7 @@ const styles = StyleSheet.create({
   post_img:{
     paddingTop:0,
     width:390,
-    height:250,
+    height:300,
   },
 
   post_user_img:{
@@ -114,6 +188,8 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     borderRadius: 25,
     marginLeft:16,
+      borderWidth:1,
+      borderColor: "#4959E8",
   },
 
   header:{
@@ -133,6 +209,7 @@ const styles = StyleSheet.create({
     fontStyle: "normal",
     fontWeight: 400,
     fontSize: 18,
+    letterSpacing: 1,
   },
 
   item_data:{
@@ -141,6 +218,7 @@ const styles = StyleSheet.create({
     fontWeight: 400,
     fontSize: 16,
     lineHeight:19,
+    letterSpacing: 1,
 
   },
   text:{
@@ -151,19 +229,21 @@ const styles = StyleSheet.create({
     fontStyle: "normal",
     fontWeight: 400,
     fontSize: 16,
-    alignSelf:'center'
+    alignSelf:'center',
+    letterSpacing: 1,
 
   },
 
-  text_com:{
+  post_txt:{
     width: 358,
     marginLeft: 16,
-    marginTop:8,
+    marginTop:16,
     marginBottom: 16,
     fontStyle: "normal",
     fontWeight: 400,
     fontSize: 16,
-    alignSelf:'center'
+    alignSelf:'center',
+    letterSpacing: 1,
   },
 
   line:{
@@ -171,6 +251,28 @@ const styles = StyleSheet.create({
     width: 390,
     height: 1,
   },
+
+  footer:{
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginRight:16,
+    marginLeft:24,
+  },
+  footer_like:{
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+
+  count:{
+    marginTop: 16,
+  },
+
+  item_group:{
+    marginTop: 16,
+    letterSpacing: 1,
+  }
 
 
 

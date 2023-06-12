@@ -7,6 +7,8 @@ import Sign_up from './screens/Sign_up'
 import Sign_in from './screens/Sign_in'
 import Home from './screens/Home'
 import Post from './screens/Post'
+import Account from './screens/Account'
+import CreatePost from './screens/CreatePost'
 
 const Stack = createStackNavigator()
 
@@ -21,21 +23,47 @@ function MainStackNavigator() {
       <Stack.Navigator
         headerMode='float'>
         <Stack.Screen
-          name='Sign_up'
-          component={Sign_up}
-          options={{title: ' '}}
-        />
-
-        <Stack.Screen
           name='Sign_in'
           component={Sign_in}
           options={{title: ' '}}
         />
 
         <Stack.Screen
+          name='Sign_up'
+          component={Sign_up}
+          options={{title: ' '}}
+        />
+
+
+        <Stack.Screen
           name='Home'
           component={Home}
           options={{title: 'Главная',
+            headerStyle: {
+            backgroundColor: '#4959E8'},
+              headerTintColor: '#fff',
+              headerTitleStyle: {
+              fontWeight: 'bold',
+                fontSize: 20,
+          },}}
+        />
+          <Stack.Screen
+          name='Account'
+          component={Account}
+          options={{title: 'Профиль',
+            headerStyle: {
+            backgroundColor: '#4959E8'},
+              headerTintColor: '#fff',
+              headerTitleStyle: {
+              fontWeight: 'bold',
+                fontSize: 20,
+          },}}
+        />
+
+        <Stack.Screen
+          name='CreatePost'
+          component={CreatePost}
+          options={{title: 'Создание поста',
             headerStyle: {
             backgroundColor: '#4959E8'},
               headerTintColor: '#fff',

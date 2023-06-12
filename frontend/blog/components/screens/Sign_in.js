@@ -1,9 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { useHistory } from "react-dom";
-const API_URL = process.env.REACT_APP_API_URL || 'http://192.168.1.38:8000'
+import {REACT_APP_API_URL} from "@env";
+const API_URL = REACT_APP_API_URL
 
-import { StyleSheet, Text, View, TextInput,Button,Pressable, Alert, } from 'react-native';
+import { StyleSheet, Text, View, TextInput,Button,Pressable, Alert, TouchableWithoutFeedback, KeyboardAvoidingView, Keyboard } from 'react-native';
 
 
 
@@ -11,18 +12,15 @@ function Sign_in(props) {
 
     const { navigation } = props
     const [userData, setUserData] = React.useState({});
-    let auth_token = ''
 
     const checkResponse = (res) => {
       if (res.ok) {
-          console.log(res)
         return (res.json());
       }
       return res.json().then((err) => Promise.reject(err));
     };
 
     const loginUser = (username, password) => {
-        console.log(username, password)
       return fetch(`${API_URL}/api/auth/token/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -72,48 +70,51 @@ function Sign_in(props) {
       };
 
   return (
-    <View style={styles.container}>
-        <Text style={styles.text}>Авторизация</Text>
+      <KeyboardAvoidingView behavior="padding" style={styles.container}>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View style={styles.container}>
+                  <View>
+                    <Text style={styles.text}>Авторизация</Text>
+                        <TextInput
+                            style={styles.Login}
+                            onChange={event => onChangeInput(event, "username")}
+                            placeholder="Логин"
+                            id = {1}
+                        />
 
-        <TextInput
-        style={styles.Login}
-        onChange={event => onChangeInput(event, "username")}
-        placeholder="Логин"
-        id = {1}
-        />
+                        <TextInput
+                            style={styles.Mail}
+                            secureTextEntry={true}
+                            onChange={event => onChangeInput(event, "password")}
+                            placeholder="Пароль"
+                            id = {3}
+                        />
+                  </View>
+                  <View style={styles.btnContainer}>
+                    <Pressable style={styles.btn} onPress={handleSubmit}>
+                      <Text style={styles.btn_text}>Войти</Text>
+                    </Pressable>
 
-        <TextInput
-        style={styles.Mail}
-        secureTextEntry={true}
-        onChange={event => onChangeInput(event, "password")}
-        placeholder="Пароль"
-        id = {3}
-        />
-
-
-        <Pressable style={styles.btn} onPress={handleSubmit}>
-          <Text style={styles.btn_text}>Войти</Text>
-        </Pressable>
-
-        <View style={styles.lines}>
-            <View style={styles.left_lines}></View>
-            <Text>или</Text>
-            <View style={styles.right_lines}></View>
-        </View>
-
-        <View style={styles.footer}>
-            <Text style={styles.footer_text}>Нет аккаунта?</Text>
-            <View style={styles.footer_btn}>
-              <Button
-              title="Зарегистрироваться"
-              color="#4959E8"
-              onPress={() => navigation.navigate('Sign_up')}
-            />
+                    <View style={styles.lines}>
+                        <View style={styles.left_lines}></View>
+                        <Text>или</Text>
+                        <View style={styles.right_lines}></View>
+                    </View>
+                    <View style={styles.footer}>
+                        <Text style={styles.footer_text}>Нет аккаунта?</Text>
+                        <View style={styles.footer_btn}>
+                          <Button
+                              title="Зарегистрироваться"
+                              color="#4959E8"
+                              onPress={() => navigation.navigate('Sign_up')}
+                          />
+                        </View>
+                    </View>
+                </View>
             </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
 
-        </View>
-
-    </View>
 
   );
 }
@@ -124,11 +125,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+    height: 844,
 
   },
   text: {
+      marginTop: -100,
     fontSize: 32,
     color: '#4959E8',
+      alignSelf:'center'
   },
   Login: {
     marginTop: 50,
@@ -183,7 +187,7 @@ const styles = StyleSheet.create({
   },
   footer:{
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     marginTop: 17,
   },
   footer_text:{

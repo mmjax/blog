@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from 'react';
 
 import filter from 'lodash.filter'
-const API_URL = process.env.REACT_APP_API_URL || 'http://192.168.1.38:8000/api/posts/'
+import {REACT_APP_API_URL} from "@env";
+const API_URL = REACT_APP_API_URL;
 import defaultLogo from '../logos/def_user_logo.png'
 
 
@@ -14,8 +15,10 @@ import {
   Pressable,
   Alert,
   SafeAreaView,
-  ActivityIndicator, FlatList, Image, TouchableOpacity,
+  ActivityIndicator, FlatList, Image, TouchableOpacity, ScrollView,
 } from 'react-native';
+import {AntDesign} from "@expo/vector-icons";
+import {IconButton} from "@react-native-material/core";
 
 function Home(props) {
 
@@ -26,28 +29,78 @@ function Home(props) {
     const [fullData, setFullData] = useState([]);
     const [error, setError] = useState(null);
     const [searchQuery, setsearchQuery] = useState("");
+    const [group, setGroup] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
+
+
     const handleSearch = (query) => {
       setsearchQuery(query);
-      const forformattedQuery = query.toLowerCase();
       const filteredData = filter(fullData, (user) => {
         return contains(user, query);
       });
       setData(filteredData);
     };
 
+    const DeleteLike = (post_id) => {
+      return fetch(`${API_URL}/api/posts/${post_id}/like/`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Token ${auth_token}`,
+        }
+      }).then((res) => {
+        if (res.status === 204) {
+          return { status: true };
+        }
+        return { status: false};
+      })
+  };
+
+  const PostLike = (post_id) => {
+      return fetch(`${API_URL}/api/posts/${post_id}/like/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Token ${auth_token}`,
+        }
+      }).then((res) => {
+        if (res.status === 201) {
+          return { status: true };
+        }
+        return { status: false};
+      })
+  };
+
+  const handleLike = () => {
+    const method = Number(data.is_liked) ? DeleteLike : PostLike
+    method(data.id).then(_ => {
+        forceCardUpdate();
+      })
+      .catch(err => {
+        const { errors } = err;
+        if (errors) {
+          Alert.alert(errors);
+        }
+      })
+
+  };
+
     const contains = ({author, text}, query) => {
       const {username, email} = author;
-      if (username.includes(query) || email.includes(query) || text.includes(query)){
+      if (username.includes(query) || email.includes(query) || text.includes(query)) {
         return true;
       }
       return false;
     }
 
+    const HandleGroup = (group) => {
+      setGroup(group)
+  }
+
     useEffect(() => {
       setIsLoading(true);
-      fetchData(API_URL);
-    }, []);
+      fetchData(group === 0 ? `${API_URL}/api/posts/` : `${API_URL}/api/posts/?group=${group}`);
+    }, [group]);
 
     const fetchData = async(url) => {
       try {
@@ -64,7 +117,8 @@ function Home(props) {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView >
+
+      <SafeAreaView style={styles.SafeAreaView}>
         <TextInput placeholder='search' clearButtonMode='always'
                    style={styles.search}
                    autoCapitalize="none"
@@ -72,19 +126,51 @@ function Home(props) {
                    value={searchQuery} onChangeText={(query) => handleSearch(query)}/>
       </SafeAreaView>
 
+      <ScrollView style={styles.body}>
+
+        <Button
+              title="в профиль"
+              color="#f9b924"
+              size="sm"
+              onPress={() => navigation.navigate('Account')}
+            />
+
+
       <View style={styles.line_btn}>
-        <Pressable style={styles.o_btn} >
-          <Text style={styles.txt_o_btn}>музыка</Text>
-        </Pressable>
-        <Pressable style={styles.o_btn}>
+        {group != 'music' ?
+            <Pressable style={styles.o_btn} onPress={() => HandleGroup('music')}>
+              <Text style={styles.txt_o_btn}>музыка</Text>
+            </Pressable> :
+            <Pressable style={styles.o_btn} onPress={() => HandleGroup(0)}>
+              <Text style={styles.txt_o_btn}>все</Text>
+            </Pressable>
+        }
+        {group != 'film' ?
+            <Pressable style={styles.o_btn} onPress={() => HandleGroup('film')}>
           <Text style={styles.txt_o_btn}>фильмы</Text>
-        </Pressable>
-        <Pressable style={styles.o_btn}>
-          <Text style={styles.txt_o_btn}>юмор</Text>
-        </Pressable>
-        <Pressable style={styles.o_btn}>
-          <Text style={styles.txt_o_btn}>игры</Text>
-        </Pressable>
+        </Pressable> :
+            <Pressable style={styles.o_btn} onPress={() => HandleGroup(0)}>
+              <Text style={styles.txt_o_btn}>все</Text>
+            </Pressable>
+        }
+        {group != 'humor' ?
+            <Pressable style={styles.o_btn} onPress={() => HandleGroup('humor')}>
+              <Text style={styles.txt_o_btn}>юмор</Text>
+            </Pressable> :
+            <Pressable style={styles.o_btn} onPress={() => HandleGroup(0)}>
+              <Text style={styles.txt_o_btn}>все</Text>
+            </Pressable>
+        }
+        {group != 'game' ?
+            <Pressable style={styles.o_btn} onPress={() => HandleGroup('game')}>
+              <Text style={styles.txt_o_btn}>игры</Text>
+            </Pressable> :
+            <Pressable style={styles.o_btn} onPress={() => HandleGroup(0)}>
+              <Text style={styles.txt_o_btn}>все</Text>
+            </Pressable>
+        }
+
+
       </View>
 
       <FlatList style={styles.list}
@@ -96,11 +182,22 @@ function Home(props) {
                     <Image style={styles.item_img} source={item.author.photo != null ? {uri: item.author.photo} : defaultLogo}/>
                     <View style={styles.header_colum}>
                       <Text style={styles.item_user}> {item.author.username}</Text>
-                      <Text style={styles.item_data}> {item.text.length > 30 ? item.text.substring(0, 30) : item.text}</Text>
+                      <Text style={styles.item_data}> {item.pub_date}</Text>
                     </View>
                   </View>
+                  <Image style={styles.img} source={{uri: item.image}}/>
+                  <Text style={styles.item_text}> {item.text.length > 30 ? item.text.substring(0, 30) : item.text}</Text>
+
+{/*                  <IconButton onPress={handleLike} icon=
+                      {Number(data.is_liked) ?
+                      <AntDesign name="heart" size={24} color="black" />:
+                      <AntDesign name="hearto" size={24} color="black" />
+                    }/>
+                  <Text style={styles.item_data}>{data.like_count}</Text>*/}
                 </TouchableOpacity>)}
       />
+
+        </ScrollView>
     </View>
 
   );
@@ -109,22 +206,36 @@ function Home(props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
 
   },
 
+  body:{
+    width:390,
+  },
+  SafeAreaView:{
+    backgroundColor: "#fff",
+    width: 390,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center",
+    height: 65
+  },
+
   line_btn:{
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width:329,
+    justifyContent: 'space-around',
+    width:390,
+    height: 86,
     marginLeft: 0,
-    marginTop: 16,
+    marginTop: 8,
+    backgroundColor: "#fff"
   },
 
   o_btn:{
+    marginTop: 8,
     width: 70,
     height: 70,
     borderRadius: 50,
@@ -137,9 +248,10 @@ const styles = StyleSheet.create({
     fontWeight: 500,
     fontSize: 14,
     lineHeight: 17,
-    letterSpacing: 0.03,
+    letterSpacing: 1,
     alignSelf:'center',
-    marginTop: 25
+    marginTop: 25,
+
 
   },
 
@@ -151,14 +263,17 @@ const styles = StyleSheet.create({
     borderRadius:7,
     marginTop:16,
     alignItems:"center",
+
   },
   list:{
     width:390,
-    marginTop:16,
+    marginTop:0,
   },
 
   items:{
+    paddingTop:8,
     marginTop:16,
+    backgroundColor: "#fff"
   },
 
   header:{
@@ -179,12 +294,15 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     borderRadius: 25,
     marginLeft:16,
+    borderWidth:1,
+    borderColor: "#4959E8",
   },
 
   item_user:{
     fontStyle: "normal",
     fontWeight: 400,
     fontSize: 18,
+    letterSpacing: 1,
   },
 
   item_data:{
@@ -193,6 +311,11 @@ const styles = StyleSheet.create({
     fontWeight: 400,
     fontSize: 16,
     lineHeight:19,
+    letterSpacing: 1,
+  },
+  img:{
+    height: 300,
+    width: 390,
   },
 
   post_img:{
@@ -204,10 +327,12 @@ const styles = StyleSheet.create({
   item_text:{
     width: 358,
     marginLeft: 16,
-    marginTop:16,
+    marginTop: 16,
     fontStyle: "normal",
     fontWeight: 400,
     fontSize: 16,
+    letterSpacing: 1,
+    marginBottom: 16
 
   }
 

@@ -1,8 +1,9 @@
 import React from 'react';
 import { useHistory } from "react-dom";
-const API_URL = process.env.REACT_APP_API_URL || 'http://192.168.1.38:8000'
+import {REACT_APP_API_URL} from "@env";
+const API_URL = REACT_APP_API_URL
 
-import { StyleSheet, Text, View, TextInput,Button,Pressable, Alert, } from 'react-native';
+import { StyleSheet, Text, View, TextInput,Button,Pressable, Alert, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard,} from 'react-native';
 
 
 
@@ -81,56 +82,62 @@ function Sign_up(props) {
       };
 
   return (
-    <View style={styles.container}>
-        <Text style={styles.text}>Регистрация</Text>
 
+      <KeyboardAvoidingView behavior="padding" style={styles.container}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.container}>
+                <View>
+                    <Text style={styles.text}>Регистрация</Text>
+                    <TextInput
+                    style={styles.Mail}
+                    onChange={event => onChangeInput(event, 'username')}
+                    placeholder="Логин"
+                    id = {1}
+                    />
+                    <TextInput
+                    style={styles.Mail}
+                    secureTextEntry={true}
+                    onChange={event => onChangeInput(event, 'password')}
+                    placeholder="Пароль"
+                    id = {2}
+                    />
+                    <TextInput
+                    style={styles.Mail}
+                    secureTextEntry={true}
+                    onChange={event => onChangeInput(event, 're_password')}
+                    placeholder="Повтор пароля"
+                    id = {3}
+                    />
+                </View>
 
-        <TextInput
-        style={styles.Mail}
-        onChange={event => onChangeInput(event, 'username')}
-        placeholder="Логин"
-        id = {1}
-        />
-        <TextInput
-        style={styles.Mail}
-        secureTextEntry={true}
-        onChange={event => onChangeInput(event, 'password')}
-        placeholder="Пароль"
-        id = {2}
-        />
-        <TextInput
-        style={styles.Mail}
-        secureTextEntry={true}
-        onChange={event => onChangeInput(event, 're_password')}
-        placeholder="Повтор пароля"
-        id = {3}
-        />
+                <View style={styles.btnContainer}>
+                    <Pressable style={styles.btn} onPress={handleSubmit}>
+                      <Text style={styles.btn_text}>Зарегистрироваться</Text>
+                    </Pressable>
 
+                    <View style={styles.lines}>
+                        <View style={styles.left_lines}></View>
+                        <Text>или</Text>
+                        <View style={styles.right_lines}></View>
+                    </View>
 
-        <Pressable style={styles.btn} onPress={handleSubmit}>
-          <Text style={styles.btn_text}>Зарегистрироваться</Text>
-        </Pressable>
+                    <View style={styles.footer}>
+                        <Text style={styles.footer_text}>Уже есть аккаунт?</Text>
+                        <View style={styles.footer_btn}>
+                          <Button
+                          title="Войти"
+                          color="#4959E8"
+                          size="sm"
+                          onPress={() => navigation.navigate('Sign_in')}
+                        />
+                        </View>
 
-        <View style={styles.lines}>
-            <View style={styles.left_lines}></View>
-            <Text>или</Text>
-            <View style={styles.right_lines}></View>
-        </View>
-
-        <View style={styles.footer}>
-            <Text style={styles.footer_text}>Уже есть аккаунт?</Text>
-            <View style={styles.footer_btn}>
-              <Button
-              title="Войти"
-              color="#4959E8"
-              size="sm"
-              onPress={() => navigation.navigate('Sign_in')}
-            />
+                    </View>
+                </View>
             </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
 
-        </View>
-
-    </View>
 
   );
 }
@@ -141,13 +148,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+      height:844,
 
   },
   text: {
     fontSize: 32,
-      marginTop:-100,
-      marginBottom: 141,
-    color: '#4959E8',
+      alignSelf: 'center',
+      marginTop:0,
+      marginBottom: 20, color: '#4959E8',
   },
   Login: {
     marginTop: 50,
@@ -202,7 +210,7 @@ const styles = StyleSheet.create({
   },
   footer:{
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     marginTop: 17,
   },
   footer_text:{
