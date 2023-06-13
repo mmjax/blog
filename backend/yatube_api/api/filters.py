@@ -8,7 +8,10 @@ class PostFilter(FilterSet):
         field_name='group__slug',
         conjoined=True
     )
+    author = AllValuesMultipleFilter(
+        field_name='author__username',
+    )
 
     class Meta:
         model = Post
-        fields = ('group',)
+        fields = ('group', 'author')

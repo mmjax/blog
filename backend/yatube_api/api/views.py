@@ -13,14 +13,16 @@ from rest_framework.pagination import LimitOffsetPagination
 
 from .serializers import (
     CustomUserCreateSerializer, CustomUserSerializer, PostSerializer, CommentSerializer,
-    FollowSerializer, GroupSerializer, LikePostSerializer
+    FollowSerializer, GroupSerializer, LikePostSerializer, FollowPostDeleteSerializer
 )
 from .permissions import IsAuthorOrReadOnly
 from posts.models import Post, Group, Like
+from users.models import Follow, CustomUser
 from .filters import PostFilter
 
 
-class GetAndPostViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
+class GetDestroyPostViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
+                        mixins.DestroyModelMixin,
                         viewsets.GenericViewSet):
     pass
 
@@ -59,17 +61,30 @@ class CommentViewSet(viewsets.ModelViewSet):
         return self.get_post().comments.all()
 
 
-class FollowViewSet(GetAndPostViewSet):
-    serializer_class = FollowSerializer
+class FollowViewSet(GetDestroyPostViewSet):
     permission_classes = (permissions.IsAuthenticated,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('following__username',)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return FollowSerializer
+        return FollowPostDeleteSerializer
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
         return self.request.user.follower.all()
+
+    @action(methods=['delete'], detail=True)
+    def delete(self, request):
+        following = CustomUser.objects.get(username=self.request.data['following'])
+        get_object_or_404(
+            Follow,
+            user=request.user,
+            following=following).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):

@@ -10,6 +10,10 @@ import Post from './screens/Post'
 import Account from './screens/Account'
 import CreatePost from './screens/CreatePost'
 import ChangeAccount from './screens/ChangeAccount'
+import OtherAccount from "./screens/OtherAccount";
+import PersonsPosts from "./screens/PersonsPost";
+import Follows from "./screens/Follows";
+import LikedPosts from "./screens/LikedPosts";
 
 const Stack = createStackNavigator()
 
@@ -60,6 +64,18 @@ function MainStackNavigator(props) {
                 fontSize: 20,
           },}}
         />
+        <Stack.Screen
+          name='LikedPosts'
+          component={LikedPosts}
+          options={{title: 'Понравившиеся',
+            headerStyle: {
+            backgroundColor: '#4959E8'},
+              headerTintColor: '#fff',
+              headerTitleStyle: {
+              fontWeight: 'bold',
+                fontSize: 20,
+          },}}
+        />
           <Stack.Screen
           name='ChangeAccount'
           component={ChangeAccount}
@@ -75,6 +91,47 @@ function MainStackNavigator(props) {
           <Stack.Screen
           name='Account'
           component={Account}
+          options={{title: 'Профиль',
+              headerLeft: () => null,
+            headerStyle: {
+            backgroundColor: '#4959E8'},
+              headerTintColor: '#fff',
+              headerTitleStyle: {
+              fontWeight: 'bold',
+                fontSize: 20,
+          },}}
+        />
+
+        <Stack.Screen
+          name='Follows'
+          component={Follows}
+          options={{title: 'Мои подписки',
+            headerStyle: {
+            backgroundColor: '#4959E8'},
+              headerTintColor: '#fff',
+              headerTitleStyle: {
+              fontWeight: 'bold',
+                fontSize: 20,
+          },}}
+        />
+
+          <Stack.Screen
+          name='PersonsPosts'
+          component={PersonsPosts}
+          options={{title: 'Посты пользователя',
+              headerLeft: () => null,
+            headerStyle: {
+            backgroundColor: '#4959E8'},
+              headerTintColor: '#fff',
+              headerTitleStyle: {
+              fontWeight: 'bold',
+                fontSize: 20,
+          },}}
+        />
+
+        <Stack.Screen
+          name='OtherAccount'
+          component={OtherAccount}
           options={{title: 'Профиль',
               headerLeft: () => null,
             headerStyle: {

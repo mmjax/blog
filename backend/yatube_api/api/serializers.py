@@ -26,6 +26,8 @@ class CustomUserCreateSerializer(UserCreatePasswordRetypeSerializer):
 
 
 class CustomUserSerializer(UserSerializer):
+    is_following = serializers.SerializerMethodField(read_only=True)
+
 
     class Meta:
         model = CustomUser
@@ -33,9 +35,19 @@ class CustomUserSerializer(UserSerializer):
             'id',
             'email',
             'username',
-            'photo'
+            'photo',
+            'is_following'
         )
 
+
+    def get_is_following(self, obj):
+        try:
+            return Follow.objects.filter(
+                user=self.context['request'].user,
+                following=obj.id
+            ).exists()
+        except TypeError:
+            return False
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
@@ -80,7 +92,7 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only_fields = ('post',)
 
 
-class FollowSerializer(serializers.ModelSerializer):
+class FollowPostDeleteSerializer(serializers.ModelSerializer):
     user = SlugRelatedField(
         slug_field='username',
         queryset=CustomUser.objects.all(),
@@ -107,6 +119,15 @@ class FollowSerializer(serializers.ModelSerializer):
                 message="На этого автора вы уже подписаны"
             )
         ]
+        model = Follow
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    user = CustomUserSerializer(read_only=True)
+    following = CustomUserSerializer(read_only=True)
+
+    class Meta:
+        fields = ['user', 'following']
         model = Follow
 
 

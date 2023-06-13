@@ -3,6 +3,7 @@ import React, {useEffect, useState} from 'react';
 import {REACT_APP_API_URL} from "@env";
 const API_URL = REACT_APP_API_URL;
 import defaultLogo from '../logos/def_user_logo.png'
+import './Sign_in'
 
 import filter from "lodash.filter";
 import {
@@ -20,7 +21,7 @@ import {AntDesign} from "@expo/vector-icons";
 import {IconButton} from "@react-native-material/core";
 import {useIsFocused} from "@react-navigation/native";
 
-function Home(props) {
+function LikedPosts(props) {
 
 
     const { navigation } = props
@@ -61,7 +62,13 @@ function Home(props) {
 
     const fetchData = async(url) => {
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                authorization: `Token ${auth_token}`,
+            }}
+        );
         const json = await response.json();
         setData(json);
 
@@ -134,6 +141,7 @@ function Home(props) {
             data={data}
             кey={(item) => item}
             renderItem={({item}) => (
+                ( Number(item.is_liked) ?
                 <TouchableOpacity style={styles.items} onPress={() => navigation.navigate('Post', item.id)}>
                   <View style={styles.header}>
                     <Image style={styles.item_img} source={item.author.photo != null ? {uri: item.author.photo} : defaultLogo}/>
@@ -144,7 +152,9 @@ function Home(props) {
                   </View>
                   {item.image ? <Image style={styles.img} source={{uri: item.image}}/> : null}
                   <Text style={styles.item_text}> {item.text.length > 30 ? item.text.substring(0, 30) : item.text}</Text>
-                </TouchableOpacity>)}
+                </TouchableOpacity> : null))
+            }
+
       />
 
         </ScrollView>
@@ -292,4 +302,4 @@ const styles = StyleSheet.create({
 })
 
 
-export default Home
+export default LikedPosts

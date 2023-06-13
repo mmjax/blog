@@ -21,14 +21,17 @@ import './Sign_in.js';
 
 import { IconButton } from "@react-native-material/core";
 import { AntDesign } from "@expo/vector-icons"
+import {useIsFocused} from "@react-navigation/native";
 
 
-function Post({route}) {
+function Post(props) {
+  const {navigation} = props
   const [data, setData] = useState([]);
   const [author, setAuthor] = useState([]);
   const [postDate, setPostDate] = useState([]);
   const [comments, setComments] = useState([]);
   const [userData, setUserData] = useState([]);
+  const [userState, setUserState] = useState([]);
   const [user, setUser] = useState('');
   const [ignoredCard, forceCardUpdate] = React.useReducer(x => x + 1, 0);
   const [isLoading, setIsLoading] = useState(true);
@@ -57,6 +60,17 @@ function Post({route}) {
         },
       }).then(checkResponse)
     };
+
+  const getUser = () => {
+        return fetch(`${URL}/api/users/me/`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Token ${auth_token}`,
+          },
+        }).then(checkResponse)
+        .then((res) => setUserState(res))
+      };
 
   const onChangeInput = (event, name) => {
         setUserData({
@@ -148,21 +162,24 @@ function Post({route}) {
     checkValid &&
     postComments(data.id, userData.text);
   };
-
+  const isFocused = useIsFocused()
   useEffect(() => {
-     const interval = setInterval(() => {
-       getComments(route.params)
-           .then((res) => {
-             if (res) {
-               setComments(res);
-             }
-           })
-     }, 200)
+    if (isFocused) {
+      const interval = setInterval(() => {
+        getComments(props.route.params)
+            .then((res) => {
+              if (res) {
+                setComments(res);
+              }
+            })
+      }, 200)
       return () => clearInterval(interval);
-   }, [setComments, comments]);
+    }
+   }, [isFocused]);
 
    useEffect(() => {
-        getPost(route.params)
+        getUser();
+        getPost(props.route.params)
             .then((res) => {
               if (res){
                 setAuthor(res.author);
@@ -179,14 +196,16 @@ function Post({route}) {
       <ScrollView style={styles.body}>
 
       <View style={styles.post}>
-
-        <View style={styles.header}>
-          <Image style={styles.post_user_img} source={author.photo != null ? {uri:author.photo} : defaultLogo}/>
-          <View style={styles.header_col}>
-            <Text style={styles.item_user}>{author.username}</Text>
-            <Text style={styles.item_data}>{postDate}</Text>
+          <View style={styles.header}>
+            <Pressable onPress={() => navigation.navigate((author.id == userState.id ? "Account" : 'OtherAccount'), author.id)}>
+              <Image style={styles.post_user_img} source={author.photo != null ? {uri:author.photo} : defaultLogo}/>
+            </Pressable>
+            <View style={styles.header_col}>
+              <Text style={styles.item_user}>{author.username}</Text>
+              <Text style={styles.item_data}>{postDate}</Text>
+            </View>
           </View>
-        </View>
+
 
 
         {data.image != null ?
@@ -225,7 +244,9 @@ function Post({route}) {
               key={(item) => item}
               renderItem={({item}) => (
                     <View style={styles.header}>
-                      <Image style={styles.item_img} source={item.author.photo != null ? {uri: item.author.photo} : defaultLogo}/>
+                      <Pressable onPress={() => navigation.navigate((item.author.id == userState.id ? "Account" : 'OtherAccount'), item.author.id)}>
+                        <Image style={styles.item_img} source={item.author.photo != null ? {uri: item.author.photo} : defaultLogo}/>
+                      </Pressable>
                       <View style={styles.header_colum}>
                         <Text style={styles.item_user}> {item.author.username}</Text>
                         <Text style={styles.item_user}> {

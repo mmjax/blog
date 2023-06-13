@@ -20,7 +20,7 @@ import {AntDesign} from "@expo/vector-icons";
 import {IconButton} from "@react-native-material/core";
 import {useIsFocused} from "@react-navigation/native";
 
-function Home(props) {
+function PersonsPosts(props) {
 
 
     const { navigation } = props
@@ -56,7 +56,7 @@ function Home(props) {
     const isFocused = useIsFocused();
     useEffect(() => {
       setIsLoading(true);
-      fetchData(group === 0 ? `${API_URL}/api/posts/` : `${API_URL}/api/posts/?group=${group}`);
+      fetchData(group === 0 ? `${API_URL}/api/posts/?author=${props.route.params}` : `${API_URL}/api/posts/?group=${group}&author=${props.route.params}`);
     }, [group, isFocused]);
 
     const fetchData = async(url) => {
@@ -292,4 +292,4 @@ const styles = StyleSheet.create({
 })
 
 
-export default Home
+export default PersonsPosts
