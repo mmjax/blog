@@ -85,12 +85,6 @@ function Home(props) {
 
       <ScrollView style={styles.body}>
 
-        <Button
-              title="в профиль"
-              color="#f9b924"
-              size="sm"
-              onPress={() => navigation.navigate('Account')}
-            />
 
 
       <View style={styles.line_btn}>
@@ -189,18 +183,21 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 50,
-    borderColor: '#D9D9D9',
+    borderWidth: 1,
+    borderColor: '#4959E8',
     backgroundColor: '#D9D9D9',
+
   },
 
   txt_o_btn:{
     fontStyle: "normal",
-    fontWeight: 500,
+    fontWeight: 600,
     fontSize: 14,
     lineHeight: 17,
     letterSpacing: 1,
     alignSelf:'center',
     marginTop: 25,
+    color: "#4959E8",
 
 
   },
@@ -213,6 +210,7 @@ const styles = StyleSheet.create({
     borderRadius:7,
     marginTop:16,
     alignItems:"center",
+    paddingLeft: 8,
 
   },
   list:{
@@ -222,7 +220,7 @@ const styles = StyleSheet.create({
 
   items:{
     paddingTop:8,
-    marginTop:16,
+    marginTop:8,
     backgroundColor: "#fff"
   },
 

@@ -19,11 +19,11 @@ function Sign_up(props) {
       return res.json().then((err) => Promise.reject(err));
     };
 
-    const registerUser = (username, password, re_password) => {
+    const registerUser = (username, password, re_password, is_staff) => {
       return fetch(`${API_URL}/api/users/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, re_password }),
+        body: JSON.stringify({ username, password, re_password, is_staff}),
       }).then(checkResponse);
     };
 
@@ -56,7 +56,7 @@ function Sign_up(props) {
 
     const handleSubmit = () => {
       checkValid() &&
-      registerUser(userData.username, userData.password, userData.re_password)
+      registerUser(userData.username, userData.password, userData.re_password, 1)
         .then((res) => {
           if (res.status === 201) {
             navigation.navigate('Sign_in')

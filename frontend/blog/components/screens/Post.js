@@ -62,14 +62,13 @@ function Post(props) {
     };
 
   const getUser = () => {
-        return fetch(`${URL}/api/users/me/`, {
+        return fetch(`${API_URL}/api/users/me/`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             authorization: `Token ${auth_token}`,
           },
         }).then(checkResponse)
-        .then((res) => setUserState(res))
       };
 
   const onChangeInput = (event, name) => {
@@ -172,13 +171,13 @@ function Post(props) {
                 setComments(res);
               }
             })
-      }, 200)
+      }, 233300)
       return () => clearInterval(interval);
     }
    }, [isFocused]);
 
    useEffect(() => {
-        getUser();
+        getUser().then((res) => {setUserState(res)});
         getPost(props.route.params)
             .then((res) => {
               if (res){

@@ -5,16 +5,16 @@ import {REACT_APP_API_URL} from "@env";
 import { StyleSheet, Text, Image, View, TextInput,Button,Pressable, Alert, } from 'react-native';
 import defaultLogo from '../logos/def_user_logo.png'
 import {useIsFocused} from "@react-navigation/native";
-import "./Sign_in";
-
+import "./Sign_in.js";
+const URL = REACT_APP_API_URL;
 
 
 function OtherAccount(props) {
-  URL = REACT_APP_API_URL;
+
 
     const { navigation } = props;
 
-    const [userState, setUserState] = React.useState({});
+    const [userState, setUserState] = React.useState([]);
     const [ignoredCard, forceCardUpdate] = React.useReducer(x => x + 1, 0);
 
 
@@ -78,10 +78,10 @@ function OtherAccount(props) {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            authorization: `Token ${auth_token}`,
+            Authorization: `Token ${auth_token}`,
           },
         }).then(checkResponse)
-        .then((res) => setUserState(res))
+        .then((res) => {setUserState(res)})
       };
     const isFocused = useIsFocused();
     React.useEffect(() => {

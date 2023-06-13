@@ -1,8 +1,8 @@
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import {REACT_APP_API_URL} from "@env";
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, Button, Pressable, Alert, Platform } from 'react-native';
-import { Stack, IconButton, TextInput } from "@react-native-material/core";
+import { View, Text, StyleSheet, Image, TextInput, Button, Pressable, Alert, ScrollView, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Platform } from 'react-native';
+import { Stack, IconButton,  } from "@react-native-material/core";
 import "./Sign_in";
 import * as ImagePicker from "expo-image-picker";
 import {SelectList} from "react-native-dropdown-select-list";
@@ -81,14 +81,12 @@ function CreatePost(props) {
             formData.append('text', userData.text);
             formData.append('group', selected);
             if (isImage){
-                console.log(image);
                 formData.append('image', {
                 uri: image.assets[0].uri.replace('file://', ''),
                 type: image.assets[0].type,
                 name: image.assets[0].fileName
               })
             }
-            console.log(formData)
 
                 pushPost(formData)
                 .then((res) => {
@@ -97,49 +95,89 @@ function CreatePost(props) {
                     }
                 })
                 .catch((err) => {
-                    console.log(err)
                 })
         }
       }
 return (
-    <View style={styles.screen}>
+    <View style={styles.container
+}>
 
-    <View style={styles.imagerow}>
-        <IconButton style={styles.btn} onPress={showImagePicker} icon={props => <Icon name="plus" {...props} color="#f9b924"/>} />
 
-        {
-          pickedImagePath !== '' && <Image
-            source={{ uri: pickedImagePath }}
-            style={styles.img}
-          />
-        }
-      </View>
-        <SelectList data={group_choice} setSelected={setSelected}></SelectList>
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.body}>
+            <View style={styles.select}>
+                <SelectList  data={group_choice} setSelected={setSelected}></SelectList>
+            </View>
+            <TextInput
+                style={styles.text}
+                editable
+                multiline
+                onChange={e => onChangeInput(e, "text")}
+                placeholder="Текст поста"
+                type="text"
+                id = {1}
+            />
 
-        <TextInput
-            style={styles.text}
-            editable
-            multiline
-            numberOfLines={1000}
-            maxLength={10000}
-            onChange={e => onChangeInput(e, "text")}
-            placeholder="?"
-            type="text"
-            id = {1}
-        />
 
-            <Pressable style={styles.btn} onPress={handleSubmit}>
-                <Text style={styles.btn_text}>Опубликовать </Text>
-            </Pressable>
+
+        </ScrollView>
+
+    <KeyboardAvoidingView behavior="padding" style={styles.screen}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+
+          <View style={styles.footer}>
+
+            <View style={styles.imagerow}>
+                    <IconButton style={styles.icon_btn} onPress={showImagePicker} icon={props => <Icon name="plus" {...props} color="#fff"/>} />
+
+                    {
+                      pickedImagePath !== '' && <Image
+                        source={{ uri: pickedImagePath }}
+                        style={styles.img}
+                      />
+                    }
+            </View>
+          <IconButton style={styles.icon_btn} onPress={handleSubmit} icon={props => <Icon style={styles.icon} name="send" {...props} color="#fff"/>} />
+
+        </View>
+        </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
+
 
     </View>
+
+
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  container: {
     display: 'flex',
-    backgroundColor: '#fff', },
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 844,
+  },
+    select:{
+      width: 358,
+        marginRight: 16,
+        marginLeft: 16,
+        marginTop: 16
+    },
+    icon:{
+      marginLeft: 4
+    },
+    footer:{
+      position: 'absolute',
+        alignSelf: 'center',
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: 390,
+        backgroundColor: '#fff',
+        paddingTop: 8,
+        height: 160,
+        marginTop: -160,
+    },
   btn: {
     marginTop: 27,
     alignItems: 'center',
@@ -147,25 +185,35 @@ const styles = StyleSheet.create({
     width: 318,
     height: 52,
     borderRadius: 10,
-    backgroundColor: '#f9b924',
+    backgroundColor: '#4959E8',
     marginLeft:12
   },
+    icon_btn:{
+    width: 40,
+    height: 40,
+    backgroundColor: "#4959E8",
+        marginRight: 16,
+        marginLeft: 16
+    },
   text:{
+    fontSize: 18,
     marginTop: 16,
-    alignSelf: 'center',
+      marginBottom: 16,
     width: 358,
+    marginRight: 16,
+    marginLeft: 16,
   },
   imagerow: {
-    marginTop: 60,
-    padding: 16,
     display: 'flex',
     flexDirection: 'row',
-    gap: 16
+
   },
   img: {
-    width: 90,
-    height: 90,
-    resizeMode: 'cover'
+    width: 60,
+    height: 60,
+      borderRadius: 7,
+    resizeMode: 'cover',
+      marginTop: -5,
   }
 });
 
